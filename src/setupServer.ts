@@ -1,4 +1,3 @@
-import { CustomError, IErrorResponse } from './shared/globals/helpers/error-handler';
 import { Application, json, urlencoded, Response, Request, NextFunction } from 'express';
 import http from 'http';
 import cors from 'cors';
@@ -12,8 +11,9 @@ import { createClient } from 'redis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import Logger from 'bunyan';
 import 'express-async-errors';
-import { config } from './config';
-import applicationRoutes from './routes';
+import { config } from '@root/config';
+import applicationRoutes from '@root/routes';
+import { CustomError, IErrorResponse } from '@global/helpers/error-handler';
 
 const SERVER_PORT = 5000;
 const log: Logger = config.createLogger('server');
@@ -114,6 +114,7 @@ export class ChattyServer {
   }
 
   private socketIOConnections(io: Server): void {
+    log.info('socketIOConnections');
     // const postSocketHandler: SocketIOPostHandler = new SocketIOPostHandler(io);
     // const followerSocketHandler: SocketIOFollowerHandler = new SocketIOFollowerHandler(io);
     // const userSocketHandler: SocketIOUserHandler = new SocketIOUserHandler(io);
