@@ -1,19 +1,20 @@
-import { CustomError, IErrorResponse } from './shared/globals/helpers/error-handler';
 import { Application, json, urlencoded, Response, Request, NextFunction } from 'express';
 import http from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import compression from 'compression';
-import cookieSesion from 'cookie-session';
+import cookieSession from 'cookie-session';
 import HTTP_STATUS from 'http-status-codes';
 import { Server } from 'socket.io';
 import { createClient } from 'redis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import Logger from 'bunyan';
 import 'express-async-errors';
-import { config } from './config';
-import applicationRoutes from './routes';
+import { config } from '@root/config';
+import applicationRoutes from '@root/routes';
+import { CustomError, IErrorResponse } from '@global/helpers/error-handler';
+import { SocketIOPostHandler } from '@socket/post';
 
 const SERVER_PORT = 5000;
 const log: Logger = config.createLogger('server');
@@ -35,7 +36,7 @@ export class ChattyServer {
 
   private securityMiddleware(app: Application): void {
     app.use(
-      cookieSesion({
+      cookieSession({
         name: 'session',
         keys: [config.SECRET_KEY_ONE!, config.SECRET_KEY_TWO!],
         maxAge: 24 * 7 * 3600000,
@@ -69,7 +70,7 @@ export class ChattyServer {
       res.status(HTTP_STATUS.NOT_FOUND).json({ message: `${req.originalUrl} not found` });
     });
 
-    app.use((error: IErrorResponse, req: Request, res: Response, next: NextFunction) => {
+    app.use((error: IErrorResponse, _req: Request, res: Response, next: NextFunction) => {
       log.error(error);
       if (error instanceof CustomError) {
         return res.status(error.statusCode).json(error.serializeErrors());
@@ -79,9 +80,6 @@ export class ChattyServer {
   }
 
   private async startServer(app: Application): Promise<void> {
-    // if (!config.JWT_TOKEN) {
-    //   throw new Error('JWT_TOKEN must be provided');
-    // }
     try {
       const httpServer: http.Server = new http.Server(app);
       const socketIO: Server = await this.createSocketIO(httpServer);
@@ -107,24 +105,15 @@ export class ChattyServer {
   }
 
   private startHttpServer(httpServer: http.Server): void {
-    log.info(`Worker with process id of ${process.pid} has started...`);
+    log.info(`Server has started with process ${process.pid}`);
     httpServer.listen(SERVER_PORT, () => {
       log.info(`Server running on port ${SERVER_PORT}`);
     });
   }
 
   private socketIOConnections(io: Server): void {
-    // const postSocketHandler: SocketIOPostHandler = new SocketIOPostHandler(io);
-    // const followerSocketHandler: SocketIOFollowerHandler = new SocketIOFollowerHandler(io);
-    // const userSocketHandler: SocketIOUserHandler = new SocketIOUserHandler(io);
-    // const chatSocketHandler: SocketIOChatHandler = new SocketIOChatHandler(io);
-    // const notificationSocketHandler: SocketIONotificationHandler = new SocketIONotificationHandler();
-    // const imageSocketHandler: SocketIOImageHandler = new SocketIOImageHandler();
-    // postSocketHandler.listen();
-    // followerSocketHandler.listen();
-    // userSocketHandler.listen();
-    // chatSocketHandler.listen();
-    // notificationSocketHandler.listen(io);
-    // imageSocketHandler.listen(io);
+    const postSocketHandler: SocketIOPostHandler = new SocketIOPostHandler(io);
+
+    postSocketHandler.listen();
   }
 }
