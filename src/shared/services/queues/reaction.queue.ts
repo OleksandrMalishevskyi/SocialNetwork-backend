@@ -15,4 +15,3 @@ class ReactionQueue extends BaseQueue {
 }
 
 export const reactionQueue: ReactionQueue = new ReactionQueue();
-//
