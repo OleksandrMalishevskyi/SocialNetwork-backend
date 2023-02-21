@@ -23,7 +23,7 @@ withCredentials: true
 
 {
   "username": "danny",
-  "password": "qwerty1"
+  "password": "qwerty"
 }
 
 ###
@@ -45,7 +45,7 @@ Accept: application/json
 withCredentials: true
 
 {
-  "email": "manny@test.com"
+  "email": "danny@test.com"
 }
 
 ###
