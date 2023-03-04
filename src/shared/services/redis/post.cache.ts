@@ -33,6 +33,8 @@ export class PostCache extends BaseCache {
       commentsCount,
       imgVersion,
       imgId,
+      videoId,
+      videoVersion,
       reactions,
       createdAt
     } = createdPost;
@@ -71,6 +73,10 @@ export class PostCache extends BaseCache {
       `${imgVersion}`,
       'imgId',
       `${imgId}`,
+      'videoId',
+      `${videoId}`,
+      'videoVersion',
+      `${videoVersion}`,
       'createdAt',
       `${createdAt}`
     ];
@@ -102,12 +108,12 @@ export class PostCache extends BaseCache {
 
       const reply: string[] = await this.client.ZRANGE(key, start, end, { REV: true });
       const multi: ReturnType<typeof this.client.multi> = this.client.multi();
-      for(const value of reply) {
+      for (const value of reply) {
         multi.HGETALL(`posts:${value}`);
       }
-      const replies: PostCacheMultiType = await multi.exec() as PostCacheMultiType;
+      const replies: PostCacheMultiType = (await multi.exec()) as PostCacheMultiType;
       const postReplies: IPostDocument[] = [];
-      for(const post of replies as IPostDocument[]) {
+      for (const post of replies as IPostDocument[]) {
         post.commentsCount = Helpers.parseJson(`${post.commentsCount}`) as number;
         post.reactions = Helpers.parseJson(`${post.reactions}`) as IReactions;
         post.createdAt = new Date(Helpers.parseJson(`${post.createdAt}`)) as Date;
@@ -142,12 +148,12 @@ export class PostCache extends BaseCache {
 
       const reply: string[] = await this.client.ZRANGE(key, start, end, { REV: true });
       const multi: ReturnType<typeof this.client.multi> = this.client.multi();
-      for(const value of reply) {
+      for (const value of reply) {
         multi.HGETALL(`posts:${value}`);
       }
-      const replies: PostCacheMultiType = await multi.exec() as PostCacheMultiType;
+      const replies: PostCacheMultiType = (await multi.exec()) as PostCacheMultiType;
       const postWithImages: IPostDocument[] = [];
-      for(const post of replies as IPostDocument[]) {
+      for (const post of replies as IPostDocument[]) {
         if ((post.imgId && post.imgVersion) || post.gifUrl) {
           post.commentsCount = Helpers.parseJson(`${post.commentsCount}`) as number;
           post.reactions = Helpers.parseJson(`${post.reactions}`) as IReactions;
@@ -162,6 +168,34 @@ export class PostCache extends BaseCache {
     }
   }
 
+  public async getPostsWithVideosFromCache(key: string, start: number, end: number): Promise<IPostDocument[]> {
+    try {
+      if (!this.client.isOpen) {
+        await this.client.connect();
+      }
+
+      const reply: string[] = await this.client.ZRANGE(key, start, end, { REV: true });
+      const multi: ReturnType<typeof this.client.multi> = this.client.multi();
+      for (const value of reply) {
+        multi.HGETALL(`posts:${value}`);
+      }
+      const replies: PostCacheMultiType = (await multi.exec()) as PostCacheMultiType;
+      const postWithVideos: IPostDocument[] = [];
+      for (const post of replies as IPostDocument[]) {
+        if (post.videoId && post.videoVersion) {
+          post.commentsCount = Helpers.parseJson(`${post.commentsCount}`) as number;
+          post.reactions = Helpers.parseJson(`${post.reactions}`) as IReactions;
+          post.createdAt = new Date(Helpers.parseJson(`${post.createdAt}`)) as Date;
+          postWithVideos.push(post);
+        }
+      }
+      return postWithVideos;
+    } catch (error) {
+      log.error(error);
+      throw new ServerError('Server error. Try again.');
+    }
+  }
+
   public async getUserPostsFromCache(key: string, uId: number): Promise<IPostDocument[]> {
     try {
       if (!this.client.isOpen) {
@@ -170,12 +204,12 @@ export class PostCache extends BaseCache {
 
       const reply: string[] = await this.client.ZRANGE(key, uId, uId, { REV: true, BY: 'SCORE' });
       const multi: ReturnType<typeof this.client.multi> = this.client.multi();
-      for(const value of reply) {
+      for (const value of reply) {
         multi.HGETALL(`posts:${value}`);
       }
-      const replies: PostCacheMultiType = await multi.exec() as PostCacheMultiType;
+      const replies: PostCacheMultiType = (await multi.exec()) as PostCacheMultiType;
       const postReplies: IPostDocument[] = [];
-      for(const post of replies as IPostDocument[]) {
+      for (const post of replies as IPostDocument[]) {
         post.commentsCount = Helpers.parseJson(`${post.commentsCount}`) as number;
         post.reactions = Helpers.parseJson(`${post.reactions}`) as IReactions;
         post.createdAt = new Date(Helpers.parseJson(`${post.createdAt}`)) as Date;
@@ -222,7 +256,7 @@ export class PostCache extends BaseCache {
   }
 
   public async updatePostInCache(key: string, updatedPost: IPostDocument): Promise<IPostDocument> {
-    const { post, bgColor, feelings, privacy, gifUrl, imgVersion, imgId, profilePicture } = updatedPost;
+    const { post, bgColor, feelings, privacy, gifUrl, imgVersion, imgId, videoId, videoVersion, profilePicture } = updatedPost;
     const firstList: string[] = [
       'post',
       `${post}`,
@@ -233,7 +267,11 @@ export class PostCache extends BaseCache {
       'privacy',
       `${privacy}`,
       'gifUrl',
-      `${gifUrl}`
+      `${gifUrl}`,
+      'videoId',
+      `${videoId}`,
+      'videoVersion',
+      `${videoVersion}`
     ];
     const secondList: string[] = ['profilePicture', `${profilePicture}`, 'imgVersion', `${imgVersion}`, 'imgId', `${imgId}`];
     const dataToSave: string[] = [...firstList, ...secondList];
@@ -245,7 +283,7 @@ export class PostCache extends BaseCache {
       await this.client.HSET(`posts:${key}`, dataToSave);
       const multi: ReturnType<typeof this.client.multi> = this.client.multi();
       multi.HGETALL(`posts:${key}`);
-      const reply: PostCacheMultiType = await multi.exec() as PostCacheMultiType;
+      const reply: PostCacheMultiType = (await multi.exec()) as PostCacheMultiType;
       const postReply = reply as IPostDocument[];
       postReply[0].commentsCount = Helpers.parseJson(`${postReply[0].commentsCount}`) as number;
       postReply[0].reactions = Helpers.parseJson(`${postReply[0].reactions}`) as IReactions;
