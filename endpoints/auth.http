@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:5000
+@baseUrl = https://api.dev.mycatssocialnetwork.xyz
 @urlPath = api/v1
 
 ###
@@ -8,9 +8,9 @@ Accept: application/json
 withCredentials: true
 
 {
-  "username": "danny",
+  "username": "ssanny",
   "password": "qwerty",
-  "email": "danny@test.com",
+  "email": "ssanny@test.com",
   "avatarColor": "green",
   "avatarImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA0gAAAMyAQMAAABtkHM/AAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAFiS0dEAf8CLd4AAABrSURBVBgZ7cGBAAAAAMOg+1NP4AjVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjgBSwwABwrL8wAAAAABJRU5ErkJggg=="
 }
