@@ -47,7 +47,7 @@ export const newPost: IBody = {
 };
 
 export const postMockData: IPostDocument = {
-  _id: new mongoose.Types.ObjectId('6027f77087c9d9ccb1555268'),
+  _id: new mongoose.Types.ObjectId('63f4a4c6b2105f59c6fb20cd'),
   userId: existingUser._id,
   username: existingUser.username,
   email: existingUser.email,
