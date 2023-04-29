@@ -48,5 +48,3 @@ export class Helpers {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
   }
 }
-
-

@@ -42,7 +42,7 @@ class CommentService {
         gifUrl: response[1].gifUrl!,
         reaction: ''
       });
-      
+
       socketIONotificationObject.emit('insert notification', notifications, { userTo });
       const templateParams: INotificationTemplate = {
         username: response[2].username!,
