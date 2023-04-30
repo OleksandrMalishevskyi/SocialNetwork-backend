@@ -202,7 +202,7 @@ jobs:
       - run:
           name: Upload project to S3
           command: |
-            aws --region eu-central-1 s3 cp lucianbrit.zip s3://lucianbrit-server-${CIRCLE_BRANCH}-app
+            aws --region eu-central-1 s3 cp lucianbrit.zip s3://lucianbritapp-server-${CIRCLE_BRANCH}-app
       - *notify-on-fail
 
   push-to-aws-code-deploy:
